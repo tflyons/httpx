@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -89,4 +90,22 @@ func TestRateLimit(t *testing.T) {
 	if end.Sub(start) < d*time.Duration(n) {
 		t.Fatal("expected time delay due to rate limit")
 	}
+}
+
+func ExampleClient() {
+	c := httpx.DefaultClient
+	// set a header to be sent on every request
+	c = httpx.SetHeader(c, "some-header", "1234")
+	// limit the total request volume to 100 per minute
+	c = httpx.SetRateLimit(c, 100, time.Minute)
+	// limit every request to 30 seconds round trip
+	c = httpx.SetTimeout(c, time.Second*30)
+	// set an initializer to load a token from a file into the header prior to doing calls
+	c = httpx.SetInitializer(c, func(next httpx.Client) (httpx.ClientFunc, error) {
+		token, err := os.ReadFile("mytoken.txt")
+		if err != nil {
+			return nil, err
+		}
+		return httpx.SetHeader(next, "SOME-TOKEN", string(token)), nil
+	})
 }

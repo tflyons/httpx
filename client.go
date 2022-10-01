@@ -261,14 +261,12 @@ func SetRateLimit(c Client, max int, duration time.Duration) ClientFunc {
 	}
 }
 
+// Initializer is a function signature that accepts a Client and returns either a client function or an error
+type Initializer func(Client) (ClientFunc, error)
+
 // SetInitializer is a helper function for constructing clients that may need to initialize with some
 // external dependency. It will retry the init function until it suceeds
-//
-// Example:
-//
-//	client := httpx.DefaultClient
-//	client = httpx.SetInitializer(client)
-func SetInitializer(c Client, init func(Client) (ClientFunc, error)) ClientFunc {
+func SetInitializer(c Client, init Initializer) ClientFunc {
 	c = nilClientCheck(c)
 	oneAtATime := make(chan struct{}, 1)
 	oneAtATime <- struct{}{}
