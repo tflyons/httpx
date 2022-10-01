@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/tflyons/httpx"
 )
@@ -61,5 +62,31 @@ func TestClient_SetCookies(t *testing.T) {
 	cookie := resp.Cookies()
 	if cookie[0].Name != "my_cookie" {
 		t.Fatal(cookie[0])
+	}
+}
+
+func TestRateLimit(t *testing.T) {
+	srv := httptest.NewServer(echoHandler)
+	defer srv.Close()
+	var c httpx.Client = srv.Client()
+
+	rateLimit := 20
+	d := time.Millisecond * 50
+	n := 10
+	c = httpx.SetRateLimit(c, rateLimit, d)
+	c = httpx.SetRequest(c, http.MethodGet, srv.URL)
+
+	// make enough requests to get rate limited n times
+	start := time.Now()
+	for i := 0; i < rateLimit*n; i++ {
+		if _, err := c.Do(nil); err != nil {
+			t.Fatal(err)
+		}
+	}
+	end := time.Now()
+
+	// the time difference should be greater than or equal to n durations
+	if end.Sub(start) < d*time.Duration(n) {
+		t.Fatal("expected time delay due to rate limit")
 	}
 }
