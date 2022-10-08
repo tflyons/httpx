@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -28,17 +29,23 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleFoo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(&Foo{
+		err := json.NewEncoder(w).Encode(&Foo{
 			Foo: 123,
 		})
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 
 func (s *Server) handleBar() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(&Bar{
+		err := json.NewEncoder(w).Encode(&Bar{
 			Bar: "tiki",
 		})
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 
@@ -69,7 +76,10 @@ func (s *Server) middlewareRequireHeader(next http.HandlerFunc, h string) http.H
 	return func(w http.ResponseWriter, r *http.Request) {
 		if v := r.Header.Get(h); v == "" {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("missing header " + h))
+			_, err:=w.Write([]byte("missing header " + h))
+			if err != nil {
+				log.Println(err)
+			}
 			return
 		}
 		next(w, r)

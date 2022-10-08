@@ -9,11 +9,13 @@ import (
 	"github.com/tflyons/httpx"
 )
 
+// MyClient is a sample client for accessing multiple apis from a single service/site
 type MyClient struct {
 	c   httpx.Client
 	url string
 }
 
+// NewMyClient creates a new instance of the sample client
 func NewMyClient(client httpx.Client, url string) (*MyClient, error) {
 	_, err := urlpkg.Parse(url)
 	if err != nil {
@@ -35,6 +37,7 @@ func NewMyClient(client httpx.Client, url string) (*MyClient, error) {
 	return m, nil
 }
 
+// Foo queries the api to retrieve data or return an error
 func (m *MyClient) Foo() (*Foo, error) {
 	req, err := http.NewRequest(http.MethodGet, m.url+"/foo", nil)
 	if err != nil {
@@ -51,6 +54,7 @@ func (m *MyClient) Foo() (*Foo, error) {
 	return &foo, nil
 }
 
+// Bar queries the api to retrieve data or return an error
 func (m *MyClient) Bar() (*Bar, error) {
 	req, err := http.NewRequest(http.MethodGet, m.url+"/bar", nil)
 	if err != nil {
@@ -65,6 +69,7 @@ func (m *MyClient) Bar() (*Bar, error) {
 	return &bar, nil
 }
 
+// decorateSetSomeHeader sets the "SOME-HEADER" header value to the value given
 func (m *MyClient) decorateSetSomeHeader(c httpx.Client, v string) httpx.ClientFunc {
 	return func(req *http.Request) (*http.Response, error) {
 		req.Header.Set("SOME-HEADER", v)
@@ -72,6 +77,7 @@ func (m *MyClient) decorateSetSomeHeader(c httpx.Client, v string) httpx.ClientF
 	}
 }
 
+// decorateLogin will create a token (if one does not already exist) and apply it to request calls
 func (m *MyClient) decorateLogin(c httpx.Client, user, pass string) httpx.ClientFunc {
 	ch := make(chan struct{}, 1)
 	ch <- struct{}{}

@@ -2,6 +2,7 @@ package httpx_test
 
 import (
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -21,7 +22,10 @@ var echoHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) 
 	for _, cookie := range r.Cookies() {
 		http.SetCookie(w, cookie)
 	}
-	io.Copy(w, r.Body)
+	_, err:=io.Copy(w, r.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
 })
 
 func TestClient_JSON(t *testing.T) {
@@ -108,4 +112,14 @@ func ExampleClient() {
 		}
 		return httpx.SetHeader(next, "SOME-TOKEN", string(token)), nil
 	})
+
+	req, err := http.NewRequest(http.MethodGet, "example.com", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	resp, err := c.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(resp.StatusCode)
 }

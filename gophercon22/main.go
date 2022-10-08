@@ -9,6 +9,8 @@ import (
 )
 
 func main() {
+	// we can either run a server or a client
+
 	switch {
 	case len(os.Args) > 1 && strings.EqualFold(os.Args[1], "server"):
 		s := &Server{}
@@ -17,7 +19,7 @@ func main() {
 			log.Println(err)
 			os.Exit(1)
 		}
-		
+
 	case len(os.Args) > 1 && strings.EqualFold(os.Args[1], "client"):
 		m, err := NewMyClient(http.DefaultClient, "http://127.0.0.1:8000")
 		if err != nil {
@@ -33,6 +35,7 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Println(bar)
+
 	default:
 		log.Println("expected a 'client' or 'server' argument")
 		os.Exit(1)
