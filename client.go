@@ -237,11 +237,11 @@ func SetRateLimit(c Client, max int, duration time.Duration) ClientFunc {
 	ticker := time.NewTicker(duration)
 	ch := make(chan struct{}, max)
 	go func() {
-		// every time interval, fill the channel to the max value
+		// every time interval, drain the channel
 		for range ticker.C {
 			for i := 0; i < max; i++ {
 				select {
-				case ch <- struct{}{}:
+				case <-ch:
 				default:
 					break
 				}
@@ -254,7 +254,7 @@ func SetRateLimit(c Client, max int, duration time.Duration) ClientFunc {
 			// if it has timed out return an error
 			return nil, fmt.Errorf("request timed out during rate limit: %w", req.Context().Err())
 
-		case <-ch:
+		case ch <- struct{}{}:
 			// we're still within the rate limit
 		}
 		return c.Do(req)
